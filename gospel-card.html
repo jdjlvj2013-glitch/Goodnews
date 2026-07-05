@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Good News Card • Interactive Gospel Business Card</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Inter:wght@300;400;500;600&amp;display=swap');
+        
+        :root {
+            --gold: #c9a227;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .heading-serif {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+        }
+
+        .verse-text {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        .gospel-card {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25), 
+                       0 10px 10px -6px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                       box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        .gospel-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 30px 60px -15px rgb(0 0 0 / 0.3);
+        }
+
+        .page-slide {
+            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        .nav-dot {
+            transition: all 0.2s ease;
+        }
+
+        .nav-dot.active {
+            background-color: #c9a227;
+            transform: scale(1.2);
+        }
+
+        .modal {
+            animation: modalPopIn 0.2s ease-out forwards;
+        }
+
+        @keyframes modalPopIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .verse-highlight {
+            background: linear-gradient(transparent 60%, #fef3c7 60%);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .faith-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+        }
+
+        .gold-accent {
+            color: #c9a227;
+        }
+
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .gospel-page {
+            scrollbar-width: none;
+        }
+
+        .gospel-page::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scripture {
+            border-left: 4px solid #c9a227;
+            padding-left: 1rem;
+        }
+
+        .interactive-btn {
+            transition: all 0.2s ease;
+        }
+
+        .interactive-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .subtle-cross {
+            background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22 fill=%22none%22%3E%3Cpath d=%22M30 5v50M15 20h30%22 stroke=%22%23c9a227%22 stroke-opacity=%22008%22 stroke-width=%221.5%22/%3E%3C/svg%27');
+            background-size: 60px 60px;
+            background-position: center;
+            opacity: 0.06;
+        }
+    </style>
+</head>
+<body class="bg-[#f8f1e3] text-slate-800">
+    <!-- Top Navigation -->
+    <nav class="bg-white border-b border-amber-200 sticky top-0 z-50">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-x-3">
+                <!-- Logo with Cross -->
+                <div class="flex items-center gap-x-2">
+                    <div class="w-9 h-9 bg-gradient-to-br from-amber-600 to-yellow-700 rounded-xl flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-cross text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-semibold text-xl tracking-tight">The Good News</span>
+                        <span class="block text-[10px] text-amber-600 -mt-1 font-medium">CARD</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-1">
+                <!-- Settings -->
+                <button onclick="showSettingsModal()" 
+                        class="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-amber-100 rounded-2xl transition-colors"
+                        title="Personalize this card">
+                    <i class="fa-solid fa-cog text-lg"></i>
+                </button>
+                
+                <!-- QR Code -->
+                <button onclick="showQRModal()" 
+                        class="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-amber-100 rounded-2xl transition-colors"
+                        title="Show QR code to share">
+                    <i class="fa-solid fa-qrcode text-lg"></i>
+                </button>
+                
+                <!-- Share -->
+                <button onclick="shareCard()" 
+                        class="w-9 h-9 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-amber-100 rounded-2xl transition-colors"
+                        title="Share this card">
+                    <i class="fa-solid fa-share-alt text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-md mx-auto px-4 pt-5 pb-8">
+        
+        <!-- Header Greeting -->
+        <div class="mb-5 text-center">
+            <div id="user-header" 
+                 class="inline-flex items-center gap-x-2 bg-white px-4 py-1.5 rounded-3xl shadow-sm border border-amber-100">
+                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span id="greeting-name" class="text-sm font-medium text-slate-700">Shared with love by Joshua</span>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex items-center gap-x-2">
+                <span class="text-xs font-semibold tracking-[1px] text-amber-700">THE ROMAN'S ROAD</span>
+            </div>
+            <div class="flex items-center gap-x-2 text-xs">
+                <span id="page-counter" class="font-mono font-semibold text-slate-500">1 / 6</span>
+            </div>
+        </div>
+
+        <!-- Main Carousel Card -->
+        <div class="relative">
+            <div id="carousel" 
+                 class="gospel-card w-full bg-white rounded-3xl border border-amber-200 overflow-hidden shadow-xl"
+                 style="height: 520px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25), 0 10px 10px -6px rgb(0 0 0 / 0.1);">
+                
+                <!-- Carousel Inner -->
+                <div id="carousel-inner" 
+                     class="flex h-full transition-transform duration-500 ease-out"
+                     style="width: 600%;">
+                    
+                    <!-- PAGE 1: Cover -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white relative overflow-hidden">
+                        <div class="absolute inset-0 subtle-cross"></div>
+                        
+                        <div class="flex-1 flex flex-col items-center justify-center text-center relative z-10">
+                            <div class="mb-6">
+                                <div class="w-20 h-20 mx-auto mb-4 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20">
+                                    <i class="fa-solid fa-cross text-5xl text-amber-400"></i>
+                                </div>
+                            </div>
+                            
+                            <h1 class="heading-serif text-4xl leading-none tracking-tighter mb-2">The Good News</h1>
+                            <p class="text-amber-300 text-sm font-medium tracking-[2px]">FOR YOU • TODAY</p>
+                            
+                            <div class="mt-8 max-w-[220px]">
+                                <p class="text-white/80 text-sm leading-relaxed">
+                                    The greatest story ever told.<br>
+                                    God's love letter to humanity.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <button onclick="nextPage()" 
+                                    class="w-full py-3.5 bg-white text-slate-900 font-semibold rounded-2xl flex items-center justify-center gap-x-2 active:scale-[0.985] transition-all">
+                                <span>Begin the journey</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                            <p class="text-center text-[10px] text-white/50 mt-3 tracking-wider">SWIPE OR TAP ARROWS TO FLIP THROUGH</p>
+                        </div>
+                    </div>
+                    
+                    <!-- PAGE 2: The Problem -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-white">
+                        <div class="flex items-center gap-x-3 mb-4">
+                            <div class="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold tracking-wider rounded-full">STEP 1</div>
+                            <div class="text-xs text-slate-500">THE PROBLEM</div>
+                        </div>
+                        
+                        <h2 class="heading-serif text-3xl leading-none tracking-tighter mb-4 text-slate-900">We All Fall Short</h2>
+                        
+                        <div class="scripture bg-amber-50 border-l-4 border-amber-600 p-4 rounded-r-2xl mb-5">
+                            <p class="verse-text text-slate-700">"for all have sinned and fall short of the glory of God."</p>
+                            <p class="text-right text-xs mt-2 text-amber-700 font-semibold">— Romans 3:23 (NIV)</p>
+                        </div>
+                        
+                        <div class="flex-1 text-sm leading-relaxed text-slate-600">
+                            <p>Sin isn't just "big" mistakes. It's anything that falls short of God's perfect holiness — our thoughts, words, and actions.</p>
+                            <p class="mt-3">This separation from God is the root of the brokenness we see in the world and feel in our own hearts.</p>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-amber-100">
+                            <button onclick="showReflectionModal(2)" 
+                                    class="interactive-btn w-full flex items-center justify-center gap-x-2 py-3 text-sm font-semibold bg-slate-900 hover:bg-black text-white rounded-2xl active:scale-[0.985]">
+                                <i class="fa-solid fa-search mr-1"></i>
+                                <span>Reflect on this truth</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PAGE 3: The Penalty & Gift -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-white">
+                        <div class="flex items-center gap-x-3 mb-4">
+                            <div class="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold tracking-wider rounded-full">STEP 2</div>
+                            <div class="text-xs text-slate-500">THE CONSEQUENCE</div>
+                        </div>
+                        
+                        <h2 class="heading-serif text-3xl leading-none tracking-tighter mb-4 text-slate-900">The Bad News &amp; The Gift</h2>
+                        
+                        <div class="scripture bg-amber-50 border-l-4 border-amber-600 p-4 rounded-r-2xl mb-5">
+                            <p class="verse-text text-slate-700">"For the wages of sin is death, but the gift of God is eternal life in Christ Jesus our Lord."</p>
+                            <p class="text-right text-xs mt-2 text-amber-700 font-semibold">— Romans 6:23 (NIV)</p>
+                        </div>
+                        
+                        <div class="flex-1 text-sm leading-relaxed text-slate-600">
+                            <p>The "wages" (what we earn) for sin is death — not just physical death, but eternal separation from God.</p>
+                            <p class="mt-3">But right in the middle of the bad news comes the greatest gift: <span class="font-semibold text-emerald-700">eternal life</span> offered freely through Jesus.</p>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-amber-100">
+                            <button onclick="showReflectionModal(3)" 
+                                    class="interactive-btn w-full flex items-center justify-center gap-x-2 py-3 text-sm font-semibold bg-slate-900 hover:bg-black text-white rounded-2xl active:scale-[0.985]">
+                                <i class="fa-solid fa-balance-scale mr-1"></i>
+                                <span>What does this mean for me?</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PAGE 4: God's Love -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-white">
+                        <div class="flex items-center gap-x-3 mb-4">
+                            <div class="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold tracking-wider rounded-full">STEP 3</div>
+                            <div class="text-xs text-slate-500">GOD'S LOVE</div>
+                        </div>
+                        
+                        <h2 class="heading-serif text-3xl leading-none tracking-tighter mb-4 text-slate-900">While We Were Still Sinners</h2>
+                        
+                        <div class="scripture bg-amber-50 border-l-4 border-amber-600 p-4 rounded-r-2xl mb-5">
+                            <p class="verse-text text-slate-700">"But God demonstrates his own love for us in this: While we were still sinners, Christ died for us."</p>
+                            <p class="text-right text-xs mt-2 text-amber-700 font-semibold">— Romans 5:8 (NIV)</p>
+                        </div>
+                        
+                        <div class="flex-1 text-sm leading-relaxed text-slate-600">
+                            <p>God didn't wait for us to clean up our lives first. He sent Jesus to die for us <span class="font-medium">while we were still in rebellion</span> against Him.</p>
+                            <p class="mt-3">This is love of the highest order — sacrificial, undeserved, and powerful enough to bridge the gap sin created.</p>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-amber-100">
+                            <button onclick="showReflectionModal(4)" 
+                                    class="interactive-btn w-full flex items-center justify-center gap-x-2 py-3 text-sm font-semibold bg-slate-900 hover:bg-black text-white rounded-2xl active:scale-[0.985]">
+                                <i class="fa-solid fa-heart mr-1"></i>
+                                <span>Let this truth sink in</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PAGE 5: The Response -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-white">
+                        <div class="flex items-center gap-x-3 mb-4">
+                            <div class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold tracking-wider rounded-full">STEP 4</div>
+                            <div class="text-xs text-slate-500">YOUR RESPONSE</div>
+                        </div>
+                        
+                        <h2 class="heading-serif text-3xl leading-none tracking-tighter mb-4 text-slate-900">Believe &amp; Be Saved</h2>
+                        
+                        <div class="scripture bg-amber-50 border-l-4 border-amber-600 p-4 rounded-r-2xl mb-5">
+                            <p class="verse-text text-slate-700">"If you declare with your mouth, 'Jesus is Lord,' and believe in your heart that God raised him from the dead, you will be saved."</p>
+                            <p class="text-right text-xs mt-2 text-amber-700 font-semibold">— Romans 10:9 (NIV)</p>
+                        </div>
+                        
+                        <div class="flex-1 text-sm leading-relaxed text-slate-600">
+                            <p>Salvation isn't earned by good works or religious effort. It is received by <span class="font-semibold">faith</span> — trusting completely in Jesus' finished work on the cross and His resurrection.</p>
+                            <p class="mt-3">It begins with a heart change and a simple, sincere declaration.</p>
+                        </div>
+                        
+                        <div class="mt-auto pt-4 border-t border-amber-100">
+                            <button onclick="showPrayerModal()" 
+                                    class="interactive-btn w-full flex items-center justify-center gap-x-2 py-3.5 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl active:scale-[0.985]">
+                                <i class="fa-solid fa-pray mr-2"></i>
+                                <span>I'm ready to pray this</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- PAGE 6: Prayer + Next Steps + Connect -->
+                    <div class="page w-1/6 h-full flex-shrink-0 p-6 flex flex-col bg-white overflow-y-auto gospel-page">
+                        <div class="flex items-center gap-x-3 mb-3">
+                            <div class="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-bold tracking-wider rounded-full">YOUR NEXT STEP</div>
+                        </div>
+                        
+                        <h2 class="heading-serif text-2xl leading-none tracking-tighter mb-3 text-slate-900">A Simple Prayer</h2>
+                        
+                        <div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-sm leading-relaxed mb-4">
+                            <p class="italic text-slate-700">"Lord Jesus, I know I have sinned and need Your forgiveness. I believe You died for my sins and rose again. I turn from my old life and trust You as my Lord and Savior. Come into my heart and change me. Thank You for the gift of eternal life. In Jesus' name, Amen."</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <button onclick="prayNow()" 
+                                    class="interactive-btn w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2 active:scale-[0.985]">
+                                <i class="fa-solid fa-hands-praying"></i>
+                                <span id="pray-button-text">Pray this prayer with me</span>
+                            </button>
+                            <div id="prayed-status" class="hidden mt-2 text-center">
+                                <span class="inline-flex items-center text-emerald-600 text-xs font-medium">
+                                    <i class="fa-solid fa-check-circle mr-1"></i> 
+                                    <span>Praise God! Decision recorded.</span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-amber-100 pt-4">
+                            <h3 class="font-semibold text-sm mb-2 text-slate-700">What's next?</h3>
+                            <ul class="text-xs space-y-1.5 text-slate-600">
+                                <li class="flex gap-x-2"><i class="fa-solid fa-book text-amber-600 mt-0.5 w-3"></i> <span>Get a Bible (or download the YouVersion app)</span></li>
+                                <li class="flex gap-x-2"><i class="fa-solid fa-church text-amber-600 mt-0.5 w-3"></i> <span>Find a Bible-believing local church</span></li>
+                                <li class="flex gap-x-2"><i class="fa-solid fa-user-friends text-amber-600 mt-0.5 w-3"></i> <span>Tell someone about your decision today</span></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Connect section -->
+                        <div class="mt-auto pt-4 border-t border-amber-100">
+                            <div class="text-center">
+                                <p class="text-xs text-slate-500 mb-1">Shared with love by</p>
+                                <p id="connect-name" class="font-semibold text-slate-800">Joshua</p>
+                                <p id="connect-tagline" class="text-[10px] text-slate-500">Follower of Jesus • Claiborne Parish, LA</p>
+                                
+                                <button onclick="contactSharer()" 
+                                        class="mt-3 text-xs font-medium px-4 py-1.5 bg-white border border-amber-300 hover:bg-amber-50 text-amber-700 rounded-2xl transition-colors w-full">
+                                    <i class="fa-solid fa-envelope mr-1.5"></i>
+                                    Connect with me about Jesus
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Carousel Controls -->
+            <div class="flex items-center justify-between mt-4 px-2">
+                <button onclick="prevPage()" 
+                        class="flex items-center justify-center w-10 h-10 bg-white border border-amber-200 hover:bg-amber-50 text-slate-700 rounded-2xl shadow-sm active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                
+                <!-- Dots -->
+                <div class="flex items-center gap-x-2" id="page-dots">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <button onclick="nextPage()" 
+                        class="flex items-center justify-center w-10 h-10 bg-white border border-amber-200 hover:bg-amber-50 text-slate-700 rounded-2xl shadow-sm active:scale-95 transition-all">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Bottom hint -->
+        <div class="text-center mt-4">
+            <p class="text-[10px] text-amber-600/70 tracking-wider">This card works best on mobile • Fully shareable via link or QR</p>
+        </div>
+        
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 modal">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="font-semibold text-xl">Personalize Your Card</h3>
+                <button onclick="closeSettingsModal()" class="text-2xl leading-none text-slate-400 hover:text-slate-600">&times;</button>
+            </div>
+            
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">YOUR NAME</label>
+                    <input id="setting-name" type="text" class="w-full border border-slate-300 focus:border-amber-400 rounded-2xl px-4 py-3 text-sm" placeholder="Joshua">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">YOUR TAGLINE</label>
+                    <input id="setting-tagline" type="text" class="w-full border border-slate-300 focus:border-amber-400 rounded-2xl px-4 py-3 text-sm" placeholder="Follower of Jesus • Claiborne Parish, LA">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">HOW PEOPLE CAN CONNECT WITH YOU</label>
+                    <textarea id="setting-contact" rows="2" class="w-full border border-slate-300 focus:border-amber-400 rounded-2xl px-4 py-3 text-sm resize-y" placeholder="Message me on Facebook or talk to me at church!"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">SHAREABLE LINK (for QR code)</label>
+                    <input id="setting-url" type="url" class="w-full border border-slate-300 focus:border-amber-400 rounded-2xl px-4 py-3 text-sm" placeholder="https://yourdomain.com/goodnews">
+                    <p class="text-[10px] text-slate-400 mt-1">Update this to the URL where you host this file</p>
+                </div>
+            </div>
+            
+            <div class="flex gap-x-3 mt-6">
+                <button onclick="saveSettings()" 
+                        class="flex-1 py-3.5 bg-slate-900 hover:bg-black text-white font-semibold rounded-2xl text-sm active:scale-[0.985]">
+                    Save &amp; Update Card
+                </button>
+                <button onclick="resetSettings()" 
+                        class="px-5 py-3.5 border border-slate-300 hover:bg-slate-50 text-slate-600 font-medium rounded-2xl text-sm">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div id="qr-modal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 modal">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-semibold text-xl">Share via QR Code</h3>
+                <button onclick="closeQRModal()" class="text-2xl leading-none text-slate-400 hover:text-slate-600">&times;</button>
+            </div>
+            
+            <div class="text-center">
+                <div id="qr-container" class="mx-auto mb-4 p-4 bg-white border border-amber-100 rounded-3xl inline-block"></div>
+                
+                <div class="mb-4">
+                    <p class="text-xs text-slate-500 mb-1">Link this QR points to:</p>
+                    <input id="qr-url-input" type="url" class="w-full text-center border border-slate-200 focus:border-amber-400 rounded-2xl px-4 py-2 text-sm" 
+                           onchange="updateQRCode()">
+                </div>
+            </div>
+            
+            <div class="flex gap-x-3">
+                <button onclick="downloadQR()" 
+                        class="flex-1 py-3 border border-slate-300 hover:bg-slate-50 font-medium rounded-2xl text-sm flex items-center justify-center gap-x-2">
+                    <i class="fa-solid fa-download"></i>
+                    <span>Download PNG</span>
+                </button>
+                <button onclick="closeQRModal()" 
+                        class="flex-1 py-3 bg-slate-900 text-white font-semibold rounded-2xl text-sm">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prayer Modal -->
+    <div id="prayer-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 modal max-h-[90vh] overflow-auto">
+            <div class="text-center mb-5">
+                <div class="mx-auto w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-pray text-emerald-600 text-3xl"></i>
+                </div>
+                <h3 class="font-semibold text-2xl">A Prayer to Begin</h3>
+                <p class="text-sm text-slate-500">If this expresses the desire of your heart, pray it sincerely to God.</p>
+            </div>
+            
+            <div class="bg-slate-50 border border-slate-100 p-5 rounded-2xl text-sm leading-relaxed mb-6">
+                <p class="italic">"Lord Jesus,<br>
+                I know I have sinned and need Your forgiveness.<br>
+                I believe You died on the cross for my sins and rose again.<br>
+                I turn away from my old life and put my trust in You as my Lord and Savior.<br>
+                Please come into my heart, forgive me, and change me from the inside out.<br>
+                Thank You for the free gift of eternal life.<br>
+                In Jesus' name I pray, Amen."</p>
+            </div>
+            
+            <div class="flex flex-col gap-y-3">
+                <button onclick="confirmPrayer()" 
+                        class="py-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 transition-colors text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>Yes, I prayed this prayer today</span>
+                </button>
+                
+                <button onclick="closePrayerModal()" 
+                        class="py-3 text-sm text-slate-500 hover:text-slate-700">Maybe later</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success / Decision Modal -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-7 text-center modal">
+            <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fa-solid fa-check text-emerald-600 text-4xl"></i>
+            </div>
+            
+            <h3 class="font-semibold text-2xl mb-2">Welcome to the Family!</h3>
+            <p class="text-slate-600 mb-6">Heaven is rejoicing right now. Your decision to follow Jesus is the most important one you'll ever make.</p>
+            
+            <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-left text-sm mb-6">
+                <p class="font-medium text-emerald-800 mb-1">Recommended next steps:</p>
+                <ul class="text-emerald-700 space-y-1 text-xs">
+                    <li>• Read the Gospel of John this week</li>
+                    <li>• Find a local church this Sunday</li>
+                    <li>• Tell one person what you did today</li>
+                </ul>
+            </div>
+            
+            <button onclick="closeSuccessModal()" 
+                    class="w-full py-3.5 bg-slate-900 text-white font-semibold rounded-2xl">
+                Continue exploring the card
+            </button>
+        </div>
+    </div>
+
+    <!-- Reflection Modal -->
+    <div id="reflection-modal" class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 modal">
+            <div id="reflection-content">
+                <!-- Dynamic content injected by JS -->
+            </div>
+            <button onclick="closeReflectionModal()" 
+                    class="mt-5 w-full py-3 text-sm font-medium text-slate-500 hover:text-slate-700">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind config
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent-gold', '#c9a227');
+            
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            'serif-custom': ['Playfair Display', 'Georgia', 'serif']
+                        }
+                    }
+                }
+            };
+        }
+
+        // Page state
+        let currentPage = 0;
+        const totalPages = 6;
+        let qrCodeInstance = null;
+        let userSettings = {
+            name: "Joshua",
+            tagline: "Follower of Jesus • Claiborne Parish, LA",
+            contact: "Message me on Facebook or talk with me at church!",
+            shareUrl: "https://your-gospel-card.example.com"
+        };
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const saved = localStorage.getItem('gospelCardSettings');
+            if (saved) {
+                userSettings = { ...userSettings, ...JSON.parse(saved) };
+            }
+            updateUserUI();
+        }
+
+        function updateUserUI() {
+            // Update greeting
+            const greeting = document.getElementById('greeting-name');
+            if (greeting) greeting.textContent = `Shared with love by ${userSettings.name}`;
+            
+            // Update connect section
+            const connectName = document.getElementById('connect-name');
+            const connectTagline = document.getElementById('connect-tagline');
+            if (connectName) connectName.textContent = userSettings.name;
+            if (connectTagline) connectTagline.textContent = userSettings.tagline;
+        }
+
+        function saveSettings() {
+            const nameInput = document.getElementById('setting-name').value.trim();
+            const taglineInput = document.getElementById('setting-tagline').value.trim();
+            const contactInput = document.getElementById('setting-contact').value.trim();
+            const urlInput = document.getElementById('setting-url').value.trim();
+
+            if (nameInput) userSettings.name = nameInput;
+            if (taglineInput) userSettings.tagline = taglineInput;
+            if (contactInput) userSettings.contact = contactInput;
+            if (urlInput) userSettings.shareUrl = urlInput;
+
+            localStorage.setItem('gospelCardSettings', JSON.stringify(userSettings));
+            updateUserUI();
+            closeSettingsModal();
+            
+            // Show toast
+            showToast("Card personalized successfully!");
+        }
+
+        function resetSettings() {
+            if (confirm("Reset to default settings?")) {
+                localStorage.removeItem('gospelCardSettings');
+                userSettings = {
+                    name: "Joshua",
+                    tagline: "Follower of Jesus • Claiborne Parish, LA",
+                    contact: "Message me on Facebook or talk with me at church!",
+                    shareUrl: "https://your-gospel-card.example.com"
+                };
+                updateUserUI();
+                closeSettingsModal();
+                showToast("Settings reset to defaults");
+            }
+        }
+
+        function showSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            document.getElementById('setting-name').value = userSettings.name;
+            document.getElementById('setting-tagline').value = userSettings.tagline;
+            document.getElementById('setting-contact').value = userSettings.contact;
+            document.getElementById('setting-url').value = userSettings.shareUrl;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeSettingsModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Carousel functions
+        function updateCarousel() {
+            const inner = document.getElementById('carousel-inner');
+            const percentage = (currentPage / totalPages) * 100;
+            inner.style.transform = `translateX(-${percentage}%)`;
+            
+            // Update counter
+            document.getElementById('page-counter').textContent = `${currentPage + 1} / ${totalPages}`;
+            
+            // Update dots
+            updateDots();
+        }
+
+        function updateDots() {
+            const container = document.getElementById('page-dots');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < totalPages; i++) {
+                const dot = document.createElement('button');
+                dot.className = `nav-dot w-2 h-2 rounded-full ${i === currentPage ? 'active bg-amber-600 scale-125' : 'bg-amber-300'}`;
+                dot.onclick = () => goToPage(i);
+                container.appendChild(dot);
+            }
+        }
+
+        function goToPage(pageIndex) {
+            if (pageIndex < 0 || pageIndex >= totalPages) return;
+            currentPage = pageIndex;
+            updateCarousel();
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                updateCarousel();
+            } else {
+                // Loop or stay on last
+                currentPage = 0;
+                updateCarousel();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                updateCarousel();
+            } else {
+                currentPage = totalPages - 1;
+                updateCarousel();
+            }
+        }
+
+        // Touch swipe support
+        function addSwipeSupport() {
+            const carousel = document.getElementById('carousel');
+            let startX = 0;
+            let endX = 0;
+
+            carousel.addEventListener('touchstart', (e) => {
+                startX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            carousel.addEventListener('touchend', (e) => {
+                endX = e.changedTouches[0].screenX;
+                const diff = startX - endX;
+                
+                if (Math.abs(diff) > 50) { // threshold
+                    if (diff > 0) {
+                        nextPage(); // swipe left = next
+                    } else {
+                        prevPage(); // swipe right = prev
+                    }
+                }
+            }, { passive: true });
+        }
+
+        // QR Code functions
+        function showQRModal() {
+            const modal = document.getElementById('qr-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            const urlInput = document.getElementById('qr-url-input');
+            urlInput.value = userSettings.shareUrl;
+            
+            // Generate QR
+            setTimeout(() => {
+                generateQRCode(userSettings.shareUrl);
+            }, 150);
+        }
+
+        function closeQRModal() {
+            const modal = document.getElementById('qr-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            // Cleanup QR
+            const container = document.getElementById('qr-container');
+            container.innerHTML = '';
+            qrCodeInstance = null;
+        }
+
+        function generateQRCode(url) {
+            const container = document.getElementById('qr-container');
+            container.innerHTML = '';
+            
+            qrCodeInstance = new QRCode(container, {
+                text: url,
+                width: 180,
+                height: 180,
+                colorDark: "#1e2937",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function updateQRCode() {
+            const urlInput = document.getElementById('qr-url-input').value.trim();
+            if (urlInput && qrCodeInstance) {
+                const container = document.getElementById('qr-container');
+                container.innerHTML = '';
+                
+                qrCodeInstance = new QRCode(container, {
+                    text: urlInput,
+                    width: 180,
+                    height: 180,
+                    colorDark: "#1e2937",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // Also update settings
+                userSettings.shareUrl = urlInput;
+                localStorage.setItem('gospelCardSettings', JSON.stringify(userSettings));
+            }
+        }
+
+        function downloadQR() {
+            const container = document.getElementById('qr-container');
+            const canvas = container.querySelector('canvas');
+            
+            if (canvas) {
+                const link = document.createElement('a');
+                link.download = 'gospel-card-qr.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } else {
+                alert("QR code not ready yet. Please try again.");
+            }
+        }
+
+        // Share function
+        async function shareCard() {
+            const shareData = {
+                title: "The Good News Card - Share the Gospel",
+                text: `Check out this interactive Gospel card shared by ${userSettings.name}. Discover the hope of Jesus!`,
+                url: userSettings.shareUrl
+            };
+
+            if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                try {
+                    await navigator.share(shareData);
+                } catch (err) {
+                    fallbackCopyLink();
+                }
+            } else {
+                fallbackCopyLink();
+            }
+        }
+
+        function fallbackCopyLink() {
+            navigator.clipboard.writeText(userSettings.shareUrl).then(() => {
+                showToast("Link copied to clipboard! Share it anywhere.");
+            }).catch(() => {
+                // Fallback for older browsers
+                const input = document.createElement('input');
+                input.value = userSettings.shareUrl;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast("Link copied! You can now paste it anywhere.");
+            });
+        }
+
+        // Prayer functions
+        function showPrayerModal() {
+            const modal = document.getElementById('prayer-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePrayerModal() {
+            const modal = document.getElementById('prayer-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        function prayNow() {
+            // Called from page 6 button
+            const status = document.getElementById('prayed-status');
+            const btnText = document.getElementById('pray-button-text');
+            
+            if (status && status.classList.contains('hidden')) {
+                status.classList.remove('hidden');
+                if (btnText) btnText.textContent = "Thank you for praying";
+                
+                // Mark as prayed
+                localStorage.setItem('gospelCardPrayed', 'true');
+                
+                // Launch confetti
+                launchConfetti();
+                
+                // Show success after short delay
+                setTimeout(() => {
+                    closePrayerModal();
+                    showSuccessModal();
+                }, 1200);
+            } else {
+                showPrayerModal();
+            }
+        }
+
+        function confirmPrayer() {
+            closePrayerModal();
+            
+            // Update page 6 UI
+            const status = document.getElementById('prayed-status');
+            const btnText = document.getElementById('pray-button-text');
+            
+            if (status) status.classList.remove('hidden');
+            if (btnText) btnText.textContent = "Thank you for praying";
+            
+            localStorage.setItem('gospelCardPrayed', 'true');
+            
+            launchConfetti();
+            showSuccessModal();
+        }
+
+        function showSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Reflection modals
+        const reflectionData = {
+            2: {
+                title: "Reflect: We All Fall Short",
+                content: `
+                    <p class="mb-4">Take a quiet moment and ask yourself:</p>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex gap-x-3"><span class="font-mono text-amber-600">1.</span> <span>Have I ever done something I knew deep down was wrong?</span></li>
+                        <li class="flex gap-x-3"><span class="font-mono text-amber-600">2.</span> <span>Do I sometimes feel a sense of guilt or emptiness that nothing seems to fill?</span></li>
+                        <li class="flex gap-x-3"><span class="font-mono text-amber-600">3.</span> <span>If I stood before a holy and perfect God today, would I have any defense?</span></li>
+                    </ul>
+                    <p class="mt-5 text-xs text-slate-500">The Bible says the answer to all three is "yes" for every person. This is why we need a Savior.</p>
+                `
+            },
+            3: {
+                title: "Reflect: The Wages & The Gift",
+                content: `
+                    <p class="mb-4">Consider these two realities:</p>
+                    <div class="bg-red-50 border-l-4 border-red-400 p-3 mb-3 rounded-r-xl text-sm">
+                        <strong class="text-red-700">The Bad News:</strong> Our sin earns death and separation from God.
+                    </div>
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-r-xl text-sm">
+                        <strong class="text-emerald-700">The Good News:</strong> God offers us the free gift of eternal life instead.
+                    </div>
+                    <p class="mt-4 text-sm">Which one will you choose to receive today?</p>
+                `
+            },
+            4: {
+                title: "Reflect: While We Were Still Sinners",
+                content: `
+                    <p class="mb-4">This verse is one of the most beautiful in Scripture. God didn't wait for perfect people.</p>
+                    <p class="text-sm mb-3">He loved us at our worst. Jesus didn't die for good people — He died for sinners, rebels, and the broken.</p>
+                    <div class="bg-amber-50 p-4 rounded-2xl text-sm">
+                        <strong>Personal question:</strong><br>
+                        How does knowing that Jesus died for you <em>while you were still far from God</em> change the way you see yourself and others?
+                    </div>
+                `
+            }
+        };
+
+        function showReflectionModal(pageNum) {
+            const modal = document.getElementById('reflection-modal');
+            const contentDiv = document.getElementById('reflection-content');
+            const data = reflectionData[pageNum];
+            
+            if (!data) {
+                contentDiv.innerHTML = `<p>Thank you for reflecting. This truth is powerful.</p>`;
+            } else {
+                contentDiv.innerHTML = `
+                    <h4 class="font-semibold text-xl mb-4">${data.title}</h4>
+                    <div class="text-slate-600">${data.content}</div>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeReflectionModal() {
+            const modal = document.getElementById('reflection-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Contact sharer
+        function contactSharer() {
+            const message = encodeURIComponent(`Hi ${userSettings.name}, I saw the Good News Card you shared and I'd like to talk more about Jesus and what it means to follow Him.`);
+            
+            // Try to open email or show options
+            const emailSubject = "I'd like to talk about Jesus";
+            
+            // Since we don't have real contact, show nice options
+            const optionsHTML = `
+                <div class="text-center">
+                    <h4 class="font-semibold mb-3">Connect with ${userSettings.name}</h4>
+                    <p class="text-sm text-slate-600 mb-5">${userSettings.contact}</p>
+                    
+                    <div class="space-y-2">
+                        <button onclick="window.location.href='mailto:?subject=${emailSubject}&body=${message}'" 
+                                class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 rounded-2xl text-sm font-medium flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-envelope text-amber-600"></i>
+                            <span>Send an email</span>
+                        </button>
+                        
+                        <button onclick="copyContactInfo()" 
+                                class="w-full py-3 bg-white border border-slate-300 hover:bg-slate-50 rounded-2xl text-sm font-medium flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-copy text-amber-600"></i>
+                            <span>Copy contact suggestion</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.getElementById('reflection-modal');
+            const contentDiv = document.getElementById('reflection-content');
+            contentDiv.innerHTML = optionsHTML;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function copyContactInfo() {
+            const text = `Hi ${userSettings.name}, I saw the Good News Card and would love to talk more about following Jesus.`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Message copied! You can paste it in a message to them.");
+                closeReflectionModal();
+            });
+        }
+
+        // Confetti
+        function launchConfetti() {
+            const colors = ['#c9a227', '#166534', '#1e40af', '#854d0e'];
+            const count = 70;
+            
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.zIndex = '99999';
+                    confetti.style.width = Math.random() > 0.5 ? '7px' : '5px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.borderRadius = Math.random() > 0.6 ? '50%' : '2px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = '-20px';
+                    confetti.style.opacity = Math.random() + 0.6;
+                    document.body.appendChild(confetti);
+                    
+                    const duration = 2800 + Math.random() * 2200;
+                    const xDrift = (Math.random() - 0.5) * 180;
+                    
+                    confetti.animate([
+                        { 
+                            transform: `translateY(0) translateX(0) rotate(0deg)`,
+                            opacity: confetti.style.opacity 
+                        },
+                        { 
+                            transform: `translateY(${window.innerHeight + 120}px) translateX(${xDrift}px) rotate(${Math.random() * 360 + 180}deg)`,
+                            opacity: 0 
+                        }
+                    ], {
+                        duration: duration,
+                        easing: 'cubic-bezier(0.23, 1.0, 0.32, 1)'
+                    }).onfinish = () => {
+                        confetti.remove();
+                    };
+                }, i * 1.8);
+            }
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-sm px-5 py-3 rounded-3xl shadow-xl flex items-center gap-x-2 z-[200]`;
+            toast.innerHTML = `
+                <i class="fa-solid fa-check-circle text-emerald-400"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.3s ease';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2600);
+        }
+
+        // Check if already prayed
+        function checkPrayedStatus() {
+            const prayed = localStorage.getItem('gospelCardPrayed') === 'true';
+            if (prayed) {
+                const status = document.getElementById('prayed-status');
+                const btnText = document.getElementById('pray-button-text');
+                if (status) status.classList.remove('hidden');
+                if (btnText) btnText.textContent = "Thank you for praying";
+            }
+        }
+
+        // Keyboard navigation
+        function addKeyboardSupport() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextPage();
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevPage();
+                }
+                if (e.key.toLowerCase() === 'q' && document.getElementById('qr-modal').classList.contains('hidden')) {
+                    showQRModal();
+                }
+            });
+            
+            // Easter egg: press "g" for gospel truth
+            let gPresses = 0;
+            document.addEventListener('keypress', (e) => {
+                if (e.key.toLowerCase() === 'g') {
+                    gPresses++;
+                    if (gPresses >= 3) {
+                        gPresses = 0;
+                        const current = document.querySelectorAll('.page')[currentPage];
+                        if (current) current.style.transition = 'transform 0.6s';
+                        launchConfetti();
+                        setTimeout(() => {
+                            if (current) current.style.transition = '';
+                        }, 800);
+                    }
+                }
+            });
+        }
+
+        // Initialize everything
+        function initializeApp() {
+            initializeTailwind();
+            loadSettings();
+            
+            // Set initial page
+            currentPage = 0;
+            updateCarousel();
+            
+            // Create initial dots
+            updateDots();
+            
+            // Swipe + keyboard
+            addSwipeSupport();
+            addKeyboardSupport();
+            
+            // Check prayer status
+            checkPrayedStatus();
+            
+            // Make sure first page is visible
+            const inner = document.getElementById('carousel-inner');
+            inner.style.transform = 'translateX(0%)';
+            
+            // Optional: Show a gentle welcome hint on first load (only once)
+            if (!localStorage.getItem('gospelCardSeen')) {
+                setTimeout(() => {
+                    const hint = document.createElement('div');
+                    hint.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 text-[10px] bg-white/90 border border-amber-200 px-3 py-1 rounded-3xl text-amber-700 shadow-sm';
+                    hint.textContent = 'Tip: Swipe left/right or use arrows to flip pages';
+                    document.body.appendChild(hint);
+                    
+                    setTimeout(() => {
+                        hint.style.transition = 'opacity 0.4s';
+                        hint.style.opacity = '0';
+                        setTimeout(() => hint.remove(), 400);
+                    }, 2800);
+                }, 4200);
+                
+                localStorage.setItem('gospelCardSeen', 'true');
+            }
+            
+            // Easter egg hint in console for developers
+            console.log('%c[Good News Card] Tip: Press "g" three times for a surprise. Arrow keys also work for navigation.', 'color:#854d0e');
+            
+            // Make sure user sees page 1 content clearly
+            console.log('%c[Gospel Card] Interactive gospel business card initialized successfully.', 'color:#166534');
+        }
+
+        // Boot the app
+        window.onload = initializeApp;
+        
+        // Expose a couple functions for advanced users (optional)
+        window.GospelCard = {
+            goToPage: (n) => { currentPage = n; updateCarousel(); },
+            resetPrayed: () => { localStorage.removeItem('gospelCardPrayed'); location.reload(); }
+        };
+    </script>
+</body>
+</html>
